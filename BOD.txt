@@ -1,0 +1,109 @@
+================
+BOD File Format
+================
+Version: 0.2.0
+Author: Santos
+================
+
+
+Types
+-----
+
+
+GUID        unique id (8 bytes)
+HSTRING        hashed string (with GUID being a key into string table)
+
+
+------
+HEADER
+------
+
+
+CHAR[3]        signature (BOD)
+UINT8        ? (0xFD)
+UINT8        ? (2)
+UINT8        compressed (0, 1)
+UINT32        ? (1)
+IF (compressed == 1) THEN
+    UINT32        uncompressed data size
+    DATA[N}        zlib compressed data (N - to file's end)
+ELSE IF (compressed == 0) THEN
+    UINT32        num strings
+    UINT32        max string length
+    FOR (num strings) DO
+        GUID        id
+        STRING        string
+    OBJECT            root object
+
+
+------
+OBJECT
+------
+
+
+UINT8         type? (1)
+HSTRING        class
+UINT32        num properties
+FOR (num properties) DO
+    HSTRING        property name
+    PROPERTY    property
+
+
+--------
+PROPERTY
+--------
+
+
+UINT8        type
+CASE (type) OF
+    0x02:    INT32        value
+    0x03:    FLOAT        value
+    0x04:    BOOL        value
+    0x05:    HSTRING        value
+    0x07:    UINT32        index
+        PROPERTY    property
+    0x09:    UINT32        count
+        UINT8        flag (0, 1)
+        FOR (count) DO
+            IF (flag == 1) THEN
+                UINT8        type? (5)
+                HSTRING        name
+            PROPERTY    property
+    0x0B:    UINT32        count
+        FOR (count) DO
+            PROPERTY    value
+    0x0D:    INT64        value
+    0x0F:    HSTRING        value
+    0xFE:    // No value
+    0xFF:    UINT32        value
+
+
+--------------
+Property Types
+--------------
+
+
+0x02 - int
+0x03 - float
+0x04 - bool
+0x05 - ?
+0x07 - object
+0x09 - struct
+0x0B - array
+0x0D - int64
+0x0F - hstring
+0xFE - objectnull
+0xFF - objectlink
+
+
+-----
+Notes
+-----
+
+
+- if compression is equal to 1, entire data block is compressed with zlib (best compression level)
+- four out of eight BOD file types are compressed - Layer, O3d, region, world
+- int property (0x02) is signed integer (can be negative)
+- properties 0x05 and 0x0F are both hashed strings, difference between the two is unknown
+- object property (0x07) is indexed globally, index can be referenced by objectlink properties (0xFF)
+- objectnull property (0xFE) has no value
