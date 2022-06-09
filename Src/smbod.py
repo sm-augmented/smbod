@@ -139,7 +139,6 @@ def writeString(stream, strings, string):
     string = str(string)
     if string not in strings:
         id = guid(string)
-        assert id not in strings.values()
         strings[string] = id
     stream.writeData(strings[string], 8)
 

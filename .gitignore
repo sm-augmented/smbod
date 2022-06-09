@@ -1,3 +1,9 @@
+*.xml
+*.PSystem
+*.bmat
+*.O3d
+SpaceMarineHasher*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
